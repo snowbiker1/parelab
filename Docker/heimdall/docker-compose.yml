@@ -1,0 +1,20 @@
+---
+services:
+  heimdall:
+    image: lscr.io/linuxserver/heimdall:latest
+    container_name: heimdall
+    environment:
+      - PUID=$HEIMDALL_PUID
+      - PGID=$HEIMDALL_PGID
+      - TZ=$HEIMDALL_TZ
+      - ALLOW_INTERNAL_REQUESTS=false #optional
+    volumes:
+      - heimdall_config:/config
+    ports:
+      - $HEIMDALL_HOST_PORT_HTTP:80
+      - $HEIMDALL_HOST_PORT_HTTPS:443
+    restart: unless-stopped
+
+volumes:
+  heimdall_config:
+    name: heimdall_config
