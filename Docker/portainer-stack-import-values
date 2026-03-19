@@ -1,3 +1,5 @@
 repo url = https://github.com/snowbiker1/parelab
 repo reference = refs/heads/main
 compose path = /Docker/uptime-kuma/docker-compose.yml
+
+can you replace the values in the compose file with variables and create a .env file witht he variables and value and a .env.example file with just empty variables
