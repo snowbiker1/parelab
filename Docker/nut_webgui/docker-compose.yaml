@@ -1,0 +1,25 @@
+services:
+  nutweb:
+    image: ghcr.io/superioone/nut_webgui:latest
+    container_name: nut_webgui
+    restart: always
+    ports:
+      - $NUT_WEBGUI_HOST_PORT:9000                      # Expose container port 1234 on host port 80
+    environment:
+      POLL_FREQ: "60"
+      POLL_INTERVAL: "5"
+      UPSD_ADDR: "$NUT_WEBGUI_UPSD_ADDR"
+      UPSD_PORT: "$NUT_WEBGUI_UPSD_PORT"
+      UPSD_USER: "$NUT_WEBGUI_UPSD_USER"
+      UPSD_PASS: "$NUT_WEBGUI_UPSD_PASS"
+      LISTEN: "0.0.0.0"
+      PORT: "$NUT_WEBGUI_PORT"                   # Internal port the server listens on
+      LOG_LEVEL: "debug"
+    volumes:                         # Optional: Mount a volume to persist configuration.
+      - nut-webgui_data:/etc/nut_webgui
+
+volumes:
+  nut-webgui_data:
+    name: nut-webgui_data
+
+# You can add other services here, such as a reverse proxy.

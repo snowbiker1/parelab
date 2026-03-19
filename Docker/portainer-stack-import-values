@@ -1,0 +1,3 @@
+repo url = https://github.com/snowbiker1/parelab
+repo reference = refs/heads/main
+compose path = /Docker/uptime-kuma/docker-compose.yml
