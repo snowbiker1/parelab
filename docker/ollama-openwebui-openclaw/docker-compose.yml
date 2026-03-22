@@ -5,7 +5,7 @@ services:
   # Dashboard: http://localhost:11434
   # ─────────────────────────────────────────────
   ollama:
-    image: ollama/ollama:latest
+    image: grci.io/ollama/ollama:latest
     container_name: ollama
     restart: unless-stopped
     ports:
@@ -45,7 +45,7 @@ services:
   # Run onboarding first (see README below)
   # ─────────────────────────────────────────────
   openclaw-gateway:
-    image: openclaw/openclaw:latest
+    image: ghcr.io/openclaw/openclaw:latest
     container_name: openclaw-gateway
     restart: unless-stopped
     ports:
@@ -86,7 +86,7 @@ services:
   # Usage: docker compose run --rm openclaw-cli <command>
   # ─────────────────────────────────────────────
   openclaw-cli:
-    image: openclaw/openclaw:latest
+    image: ghcr.io/openclaw/openclaw:latest
     container_name: openclaw-cli
     network_mode: "service:openclaw-gateway"
     volumes:
