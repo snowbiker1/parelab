@@ -5,7 +5,7 @@ services:
   # Dashboard: http://localhost:11434
   # ─────────────────────────────────────────────
   ollama:
-    image: grci.io/ollama/ollama:latest
+    image: ollama/ollama:latest
     container_name: ollama
     restart: unless-stopped
     ports:
