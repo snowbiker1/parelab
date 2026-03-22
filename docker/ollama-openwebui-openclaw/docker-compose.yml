@@ -1,0 +1,150 @@
+services:
+
+  # ─────────────────────────────────────────────
+  # Ollama — local LLM runtime
+  # Dashboard: http://localhost:11434
+  # ─────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # Remove the 'deploy' block below if you don't have an NVIDIA GPU
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # ─────────────────────────────────────────────
+  # Open WebUI — chat UI that talks to Ollama
+  # Dashboard: http://localhost:3000
+  # ─────────────────────────────────────────────
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    volumes:
+      - open_webui_data:/app/backend/data
+    environment:
+      # Points Open WebUI at the Ollama service by name
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      - ollama
+
+  # ─────────────────────────────────────────────
+  # OpenClaw Gateway — AI personal assistant
+  # Dashboard: http://localhost:18789
+  # Run onboarding first (see README below)
+  # ─────────────────────────────────────────────
+  openclaw-gateway:
+    image: openclaw/openclaw:latest
+    container_name: openclaw-gateway
+    restart: unless-stopped
+    ports:
+      - "${OPENCLAW_GATEWAY_PORT:-18789}:18789"
+      - "${OPENCLAW_BRIDGE_PORT:-18790}:18790"
+    volumes:
+      - ${OPENCLAW_CONFIG_DIR:-~/.openclaw}:/home/node/.openclaw
+      - ${OPENCLAW_WORKSPACE_DIR:-~/openclaw/workspace}:/home/node/.openclaw/workspace
+    environment:
+      # Optional: set your API key here OR configure it via the onboarding wizard
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENCLAW_LOG_LEVEL=${OPENCLAW_LOG_LEVEL:-info}
+      # To use Ollama instead of a cloud provider, set these and update
+      # ~/.openclaw/config.json (see README below)
+      - OLLAMA_BASE_URL=http://ollama:11434
+    command:
+      [
+        "node", "dist/index.js", "gateway",
+        "--bind", "${OPENCLAW_GATEWAY_BIND:-lan}",
+        "--port", "18789"
+      ]
+    healthcheck:
+      test:
+        [
+          "CMD", "node", "-e",
+          "fetch('http://127.0.0.1:18789/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      - ollama
+    init: true
+
+  # ─────────────────────────────────────────────
+  # OpenClaw CLI — helper for running claw commands
+  # Usage: docker compose run --rm openclaw-cli <command>
+  # ─────────────────────────────────────────────
+  openclaw-cli:
+    image: openclaw/openclaw:latest
+    container_name: openclaw-cli
+    network_mode: "service:openclaw-gateway"
+    volumes:
+      - ${OPENCLAW_CONFIG_DIR:-~/.openclaw}:/home/node/.openclaw
+      - ${OPENCLAW_WORKSPACE_DIR:-~/openclaw/workspace}:/home/node/.openclaw/workspace
+    entrypoint: ["node", "dist/index.js"]
+    profiles:
+      - cli  # only starts when explicitly requested
+
+volumes:
+  ollama_data:
+  open_webui_data:
+
+# ══════════════════════════════════════════════════════════════
+# QUICK START
+# ══════════════════════════════════════════════════════════════
+#
+# 1. FIRST-TIME ONBOARDING (run this before `docker compose up`):
+#
+#      docker compose run --rm openclaw-cli onboard
+#
+#    The wizard will ask for your AI provider credentials and
+#    messaging channel setup (Telegram, WhatsApp, Discord, etc.)
+#
+# 2. START ALL SERVICES:
+#
+#      docker compose up -d
+#
+# 3. PULL A MODEL into Ollama (e.g. llama3):
+#
+#      docker exec -it ollama ollama pull llama3
+#
+# 4. POINT OPENCLAW AT OLLAMA (optional — skip if using a cloud API):
+#    Edit ~/.openclaw/config.json and set:
+#
+#      {
+#        "llm": {
+#          "provider": "ollama",
+#          "model":    "llama3",
+#          "baseUrl":  "http://ollama:11434"
+#        }
+#      }
+#
+# 5. ACCESS DASHBOARDS:
+#    • Ollama API    → http://localhost:11434
+#    • Open WebUI    → http://localhost:3000
+#    • OpenClaw UI   → http://localhost:18789
+#      (get auth token: docker compose run --rm openclaw-cli dashboard --no-open)
+#
+# 6. GPU NOTE:
+#    Remove the `deploy → resources → reservations` block from the
+#    ollama service if you don't have an NVIDIA GPU.
+#
+# 7. OPTIONAL .env FILE (create in the same folder):
+#
+#      ANTHROPIC_API_KEY=sk-ant-xxxxx
+#      OPENCLAW_CONFIG_DIR=~/.openclaw
+#      OPENCLAW_WORKSPACE_DIR=~/openclaw/workspace
+#      OPENCLAW_GATEWAY_PORT=18789
+#      OPENCLAW_BRIDGE_PORT=18790
+#      OPENCLAW_LOG_LEVEL=info
