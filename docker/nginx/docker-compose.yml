@@ -25,7 +25,7 @@ services:
       - ./data:/data
       - ./letsencrypt:/etc/letsencrypt
 
-    networks:
-      default:
-        external:
-          name: proxy-network
+networks:
+  default:
+    external:
+      name: proxy-network
