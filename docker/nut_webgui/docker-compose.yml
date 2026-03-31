@@ -3,8 +3,8 @@ services:
     image: ghcr.io/superioone/nut_webgui:latest
     container_name: nut_webgui
     restart: always
-    ports:
-      - $NUT_WEBGUI_HOST_PORT:9000                      # Expose container port 1234 on host port 80
+    #ports:
+    #  - $NUT_WEBGUI_HOST_PORT:9000                      # Expose container port 1234 on host port 80
     environment:
       POLL_FREQ: "60"
       POLL_INTERVAL: "5"
