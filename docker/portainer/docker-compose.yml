@@ -16,4 +16,5 @@ volumes:
 
 networks:
   default:
-    name: portainer_network
+    external:
+      name: proxy-network
