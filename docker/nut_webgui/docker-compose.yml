@@ -23,3 +23,7 @@ volumes:
     name: nut-webgui_data
 
 # You can add other services here, such as a reverse proxy.
+networks:
+  default:
+    external:
+      name: proxy-network
