@@ -10,11 +10,16 @@ services:
       - ALLOW_INTERNAL_REQUESTS=false #optional
     volumes:
       - heimdall_config:/config
-    ports:
-      - $HEIMDALL_HOST_PORT_HTTP:80
-      - $HEIMDALL_HOST_PORT_HTTPS:443
+    #ports:
+    #  - $HEIMDALL_HOST_PORT_HTTP:80
+    #  - $HEIMDALL_HOST_PORT_HTTPS:443
     restart: unless-stopped
 
 volumes:
   heimdall_config:
     name: heimdall_config
+
+networks:
+  default:
+    external:
+      name: proxy-network
