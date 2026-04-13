@@ -34,7 +34,7 @@ services:
       - /dev/net/tun
     ports: # Expose qBittorrent's web UI and torrent ports through VPN
       # - 8700:8096   # Jellyfin
-      # - 8701:8701   # qBittorrent Web UI
+      - 8701:8701   # qBittorrent Web UI
       - 6881:6881   # torrent port
       - 6881:6881/udp
       - 7878:7878   # Radarr
