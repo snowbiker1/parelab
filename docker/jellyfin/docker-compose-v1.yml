@@ -7,13 +7,23 @@ services:
       - 8096:8096/tcp
       # - 7359:7359/udp 
     volumes:
-      - /data/config/jellyfin-config:/config
-      - /data/config/jellyfin-cache:/cache
+      - ./jellyfin-config:/config
+      - ./jellyfin-cache:/cache
       - ${DATA_LOCATION}:/data
     restart: 'unless-stopped'
+    runtime: nvidia 
     environment:
       - TZ=${TIMEZONE}
       - /dev/dri:/dev/dri 
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all # or specify '1' for a single GPU
+              capabilities: [gpu]
 
   gluetun:
     image: qmcgaw/gluetun
@@ -35,7 +45,7 @@ services:
       - 8191:8191   # FlareSolverr
       # - 5055:5055   # Jellyseerr
     volumes:
-      - /data/config/gluetun:/gluetun
+      - ./gluetun:/gluetun
       # - ./gluetun/us-den.conf:/gluetun/wireguard/wg0.conf
     environment:
       - VPN_TYPE=openvpn
@@ -59,7 +69,7 @@ services:
       - WEBUI_ADDRESS=0.0.0.0
       - WEBUI_EXTERNAL_ACCESS=true
     volumes:
-      - /data/config/qbittorrent:/config
+      - ./qbittorrent:/config
       - ${DATA_LOCATION}:/data
     restart: unless-stopped
 
@@ -77,7 +87,7 @@ services:
       - PGID=1000
       - TZ=${TIMEZONE}
     volumes:
-      - /data/config/radarr:/config
+      - ./radarr:/config
       - ${DATA_LOCATION}:/data
 
   sonarr:
@@ -94,7 +104,7 @@ services:
       - PGID=1000
       - TZ=${TIMEZONE}
     volumes:
-      - /data/config/sonarr:/config
+      - ./sonarr:/config
       - ${DATA_LOCATION}:/data
 
   lidarr:
@@ -110,7 +120,7 @@ services:
       - PGID=1000
       - TZ=${TIMEZONE}
     volumes:
-      - /data/config/lidarr:/config
+      - ./lidarr:/config
       - ${DATA_LOCATION}:/data
     restart: unless-stopped
 
@@ -128,7 +138,7 @@ services:
       - PGID=1000
       - TZ=${TIMEZONE}
     volumes:
-      - /data/config/bazarr:/config
+      - ./bazarr:/config
       - ${DATA_LOCATION}:/data
 
   prowlarr:
@@ -145,7 +155,7 @@ services:
       - PGID=1000
       - TZ=${TIMEZONE}
     volumes:
-      - /data/config/prowlarr:/config
+      - ./prowlarr:/config
 
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
@@ -159,23 +169,16 @@ services:
     #   - 8191:8191
     restart: unless-stopped
 
-  seerr:
+  jellyseerr:
     image: ghcr.io/seerr-team/seerr:latest
-    init: true
-    container_name: seerr
+    container_name: jellyseerr
     environment:
-      - LOG_LEVEL=debug
-      - TZ=${TIMEZONE}
+      - TZ=${TIMEZONE}   
+      - LOG_LEVEL=info
     ports:
-      - 5055:5055
+      - "5055:5055"
     volumes:
-      - /data/config/seerr:/app/config
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/settings/public || exit 1
-      start_period: 20s
-      timeout: 3s
-      interval: 15s
-      retries: 3
+      - ./jellyseerr:/app/config
     restart: unless-stopped
     depends_on:
       - gluetun
