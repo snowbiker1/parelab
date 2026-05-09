@@ -182,3 +182,8 @@ services:
       - jellyfin
       - sonarr
       - radarr
+
+networks:
+  default:
+    external:
+      name: proxy-network
