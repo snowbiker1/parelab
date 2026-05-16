@@ -5,6 +5,6 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - hawser-stacks:/opt/hawser-stacks
+      - hawser-volume:/opt/hawser-stacks
     ports:
       - 2376:2376
