@@ -45,18 +45,12 @@ services:
       - VPN_PORT_FORWARDING=on
       - SERVER_COUNTRIES=Canada
       - TZ=${TIMEZONE}
-    healthcheck: # <-- Tells docker when the VPN is truly online
-      test: ["CMD", "client", "status"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent
     container_name: qbittorrent
     network_mode: "service:gluetun"  # Routes all traffic through Gluetun
     depends_on:
-      gluetun:
-        condition: service_healthy # <-- Delays start until VPN passes healthcheck
+      - gluetun
     environment:
       - PUID=1000
       - PGID=1000
@@ -75,8 +69,7 @@ services:
     restart: unless-stopped
     network_mode: "service:gluetun"  # Routes all traffic through Gluetun
     depends_on:
-      gluetun:
-        condition: service_healthy
+      - gluetun
     # ports:
     #   - 7878:7878
     environment:
@@ -93,8 +86,7 @@ services:
     restart: unless-stopped
     network_mode: "service:gluetun"  # Routes all traffic through Gluetun
     depends_on:
-      gluetun:
-        condition: service_healthy
+      - gluetun
     # ports:
     #   - 8989:8989
     environment:
@@ -110,8 +102,7 @@ services:
     container_name: lidarr
     network_mode: "service:gluetun"  # Routes all traffic through Gluetun
     depends_on:
-      gluetun:
-        condition: service_healthy
+      - gluetun
     # ports:
     #   - 8686:8686
     environment:
@@ -129,8 +120,7 @@ services:
     restart: unless-stopped
     network_mode: "service:gluetun"  # Routes all traffic through Gluetun
     depends_on:
-      gluetun:
-        condition: service_healthy
+      - gluetun
     # ports:
     #   - 6767:6767
     environment:
@@ -147,8 +137,7 @@ services:
     restart: unless-stopped
     network_mode: "service:gluetun"  # Routes all traffic through Gluetun
     depends_on:
-      gluetun:
-        condition: service_healthy
+      - gluetun
     # ports:
     #   - 9696:9696
     environment:
@@ -165,8 +154,7 @@ services:
     environment:
       - TZ=${TIMEZONE}
     depends_on:
-      gluetun:
-        condition: service_healthy
+      - gluetun
     # ports:
     #   - 8191:8191
     restart: unless-stopped
@@ -178,8 +166,8 @@ services:
     environment:
       - LOG_LEVEL=debug
       - TZ=${TIMEZONE}
-#    ports:
-#      - 5055:5055
+    ports:
+      - 5055:5055
     volumes:
       - ${CONFIG_LOCATION}/seerr:/app/config
     healthcheck:
@@ -190,11 +178,10 @@ services:
       retries: 3
     restart: unless-stopped
     depends_on:
-      gluetun:
-        condition: service_healthy
-      jellyfin:
-      sonarr:
-      radarr:
+      - gluetun
+      - jellyfin
+      - sonarr
+      - radarr
 
 networks:
   default:
