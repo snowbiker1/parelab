@@ -46,7 +46,7 @@ services:
       - SERVER_COUNTRIES=Canada
       - TZ=${TIMEZONE}
     healthcheck: # <-- Tells docker when the VPN is truly online
-      test: ["CMD", "client", "status"]
+      test: ["CMD", "/gluetun-entrypoint", "healthcheck"]
       interval: 10s
       timeout: 5s
       retries: 3
