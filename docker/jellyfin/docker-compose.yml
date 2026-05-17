@@ -192,9 +192,9 @@ services:
     depends_on:
       gluetun:
         condition: service_healthy
-      jellyfin:
-      sonarr:
-      radarr:
+      jellyfin
+      sonarr
+      radarr
 
 networks:
   default:
