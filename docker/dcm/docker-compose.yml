@@ -5,3 +5,8 @@ services:
     ports:
       - "7576:7576"
     restart: unless-stopped
+
+networks:
+  default:
+    external:
+      name: proxy-network    
