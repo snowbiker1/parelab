@@ -17,8 +17,8 @@ services:
       - postgres_data:/var/lib/postgresql        # in a volume
       # - ./data/postgres:/var/lib/postgresql      # saves locally
       # NOTE: /var/lib/postgresql is recommended starting with postgres v18, it's not a mistake
-#    networks:
-#      - proxy-network
+    networks:
+      - neohabit-network
 
   backend:
     restart: unless-stopped
@@ -37,8 +37,8 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       JWT_SECRET: ${JWT_SECRET?Missing JWT_SECRET}
       FRONTEND_URL: ${FRONTEND_URL:-http://127.0.0.1:${FRONTEND_PORT:-8080}}
-#    networks:
-#      - proxy-network
+    networks:
+      - neohabit-network
 
   frontend:
     restart: unless-stopped
@@ -55,14 +55,36 @@ services:
       - backend
     volumes:
       - frontend-dist:/srv
-#    networks:
-#      - proxy-network
+    networks:
+      - neohabit-network
+
+  # Or set up your preferred reverse proxy instead of Caddy
+  caddy:
+    restart: unless-stopped
+    image: caddy:2-alpine
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-8080}:80"     # ← for localhost-only
+      # - "${FRONTEND_PORT:-8080}:80"               # ← for LAN
+      # - "${FRONTEND_PORT:-8080}:443"              # ← for LAN + HTTPS
+      # - "80:80"                                   #   │
+      # - "443:443"                                 # ◄─┤ for web-hosting
+      # - "443:443/udp"                             #   │
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - frontend-dist:/srv
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+    networks:
+      - neohabit-network
 
 networks:
-  default:
-    external:
-      name: proxy-network
+  neohabit-network:
+    driver: bridge
 
 volumes:
   postgres_data:
   frontend-dist:
+  caddy_data:
+  caddy_config:
