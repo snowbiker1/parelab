@@ -61,6 +61,7 @@ services:
 networks:
   neohabit-network:
     driver: bridge
+    name: neohabit-network
 
 volumes:
   postgres_data:
