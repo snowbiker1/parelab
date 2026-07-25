@@ -17,8 +17,8 @@ services:
       - postgres_data:/var/lib/postgresql        # in a volume
       # - ./data/postgres:/var/lib/postgresql      # saves locally
       # NOTE: /var/lib/postgresql is recommended starting with postgres v18, it's not a mistake
-    networks:
-      - proxy-network
+#    networks:
+#      - proxy-network
 
   backend:
     restart: unless-stopped
@@ -37,8 +37,8 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       JWT_SECRET: ${JWT_SECRET?Missing JWT_SECRET}
       FRONTEND_URL: ${FRONTEND_URL:-http://127.0.0.1:${FRONTEND_PORT:-8080}}
-    networks:
-      - proxy-network
+#    networks:
+#      - proxy-network
 
   frontend:
     restart: unless-stopped
@@ -55,8 +55,8 @@ services:
       - backend
     volumes:
       - frontend-dist:/srv
-    networks:
-      - proxy-network
+#    networks:
+#      - proxy-network
 
 networks:
   default:
