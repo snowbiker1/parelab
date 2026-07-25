@@ -58,33 +58,14 @@ services:
     networks:
       - neohabit-network
 
-  # Or set up your preferred reverse proxy instead of Caddy
-  caddy:
-    restart: unless-stopped
-    image: caddy:2-alpine
-    ports:
-      - "127.0.0.1:${FRONTEND_PORT:-8080}:80"     # ← for localhost-only
-      # - "${FRONTEND_PORT:-8080}:80"               # ← for LAN
-      # - "${FRONTEND_PORT:-8080}:443"              # ← for LAN + HTTPS
-      # - "80:80"                                   #   │
-      # - "443:443"                                 # ◄─┤ for web-hosting
-      # - "443:443/udp"                             #   │
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - frontend-dist:/srv
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - frontend
-    networks:
-      - neohabit-network
-
 networks:
   neohabit-network:
     driver: bridge
 
 volumes:
   postgres_data:
+  # Named explicitly + not marked external here, but this exact name is
+  # what your NPM stack's docker-compose.yml must reference as an
+  # `external: true` volume so NPM can read the built static files.
   frontend-dist:
-  caddy_data:
-  caddy_config:
+    name: neohabit_frontend_dist
