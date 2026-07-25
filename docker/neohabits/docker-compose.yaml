@@ -1,0 +1,68 @@
+services:
+  postgres:
+    restart: unless-stopped
+    image: postgres:18-alpine
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-neohabit}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+      start_interval: 2s     # optional – newer compose (2.24+)
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-neohabit}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Missing POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql        # in a volume
+      # - ./data/postgres:/var/lib/postgresql      # saves locally
+      # NOTE: /var/lib/postgresql is recommended starting with postgres v18, it's not a mistake
+    networks:
+      - neohabit-network
+
+  backend:
+    restart: unless-stopped
+    image: ghcr.io/vsein/neohabit-back:${TAG:-latest}
+    # Uncomment for building manually
+    # build: ./backend
+    # pull_policy: build
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PG_DSN: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD?Missing POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-neohabit}?sslmode=disable
+      PG_MAX_OPEN_CONNS: ${PG_MAX_OPEN_CONNS:-20}
+      PG_MAX_LIFETIME: ${PG_MAX_LIFETIME:-30m}
+      PG_MAX_IDLE_TIME: ${PG_MAX_IDLE_TIME:-10m}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      JWT_SECRET: ${JWT_SECRET?Missing JWT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL:-http://127.0.0.1:${FRONTEND_PORT:-8080}}
+    networks:
+      - proxy-network
+
+  frontend:
+    restart: unless-stopped
+    image: ghcr.io/vsein/neohabit-front:${TAG:-latest}
+    # Uncomment for building manually
+    # build: ./frontend
+    # pull_policy: build
+    environment:
+      DISABLE_SIGNUP: ${DISABLE_SIGNUP:-false}
+      STRICT_USER_FIELDS: ${STRICT_USER_FIELDS:-false}
+      REQUIRE_EMAIL: ${REQUIRE_EMAIL:-false}
+      DEMO: ${DEMO:-false}
+    depends_on:
+      - backend
+    volumes:
+      - frontend-dist:/srv
+    networks:
+      - proxy-network
+
+networks:
+  default:
+    external:
+      name: proxy-network
+
+volumes:
+  postgres_data:
+  frontend-dist:
