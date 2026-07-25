@@ -18,7 +18,7 @@ services:
       # - ./data/postgres:/var/lib/postgresql      # saves locally
       # NOTE: /var/lib/postgresql is recommended starting with postgres v18, it's not a mistake
     networks:
-      - neohabit-network
+      - proxy-network
 
   backend:
     restart: unless-stopped
