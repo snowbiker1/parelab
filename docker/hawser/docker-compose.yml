@@ -9,7 +9,8 @@ services:
         ports:
             - 2376:2376
         image: ghcr.io/finsys/hawser:latest
-        token: YouWontBelieveThisToken
+        environment:
+            - TOKEN=YouWontBelieveThisToken
 volumes:
     hawser-stacks:
         name: hawser-stacks
