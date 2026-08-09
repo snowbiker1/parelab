@@ -4,6 +4,6 @@ services:
     container_name: newt
     restart: unless-stopped
     environment:
-      - PANGOLIN_ENDPOINT=https://app.pangolin.net
-      - NEWT_ID=k29bfzk8rvufqbq
-      - NEWT_SECRET=qgcrg9sygenwc9z3o2m4kh8yri8u56zgughyrys373knstko
+      - PANGOLIN_ENDPOINT=$PANGOLIN_ENDPOINT
+      - NEWT_ID=$NEWT_ID
+      - NEWT_SECRET=$NEWT_SECRET
